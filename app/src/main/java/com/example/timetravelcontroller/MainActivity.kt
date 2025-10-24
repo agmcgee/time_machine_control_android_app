@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -22,6 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,7 +55,9 @@ class MainActivity : ComponentActivity() {
 fun StandardButtonExample() {
     val coroutineScope = rememberCoroutineScope()
     var targetAddress by remember { mutableStateOf("192.168.1.100") } // Example IP
-    var targetPort by remember { mutableStateOf(12345) } // Example Port
+    var targetPort by remember { mutableStateOf("12345") } // Example Port
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,
@@ -68,18 +75,31 @@ fun StandardButtonExample() {
             onValueChange = { targetAddress = it },
             label = { Text(text = "Target Ip",
                 modifier = Modifier.fillMaxWidth()) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }
+            )
         )
         TextField(
-            value = targetPort.toString(),
-            onValueChange = { newValue ->
-                targetPort = newValue.toIntOrNull() ?: 0
-            },
+            value = targetPort,
+            onValueChange = { targetPort = it },
             label = { Text(text = "Target Port",
-                modifier = Modifier.fillMaxWidth()) }
+                modifier = Modifier.fillMaxWidth()) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }
+            )
         )
         Button(
             onClick = { coroutineScope.launch {
-                sendUdpMessage("1", targetAddress, targetPort)
+                sendUdpMessage("1", targetAddress, targetPort.toInt())
             }},
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,7 +109,7 @@ fun StandardButtonExample() {
         }
         Button(
             onClick = { coroutineScope.launch {
-                sendUdpMessage("2", targetAddress, targetPort)
+                sendUdpMessage("2", targetAddress, targetPort.toInt())
             }},
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,7 +119,7 @@ fun StandardButtonExample() {
         }
         Button(
             onClick = { coroutineScope.launch {
-                sendUdpMessage("3", targetAddress, targetPort)
+                sendUdpMessage("3", targetAddress, targetPort.toInt())
             }},
             modifier = Modifier
                 .fillMaxWidth()
@@ -109,7 +129,7 @@ fun StandardButtonExample() {
         }
         Button(
             onClick = { coroutineScope.launch {
-                sendUdpMessage("4", targetAddress, targetPort)
+                sendUdpMessage("4", targetAddress, targetPort.toInt())
             }},
             modifier = Modifier
                 .fillMaxWidth()
